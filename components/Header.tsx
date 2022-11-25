@@ -6,49 +6,30 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import InputBase from '@mui/material/InputBase';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+
 import Badge from '@mui/material/Badge';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
-import SearchIcon from '@mui/icons-material/Search';
-import AccountCircle from '@mui/icons-material/AccountCircle';
 import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import MoreIcon from '@mui/icons-material/MoreVert';
-import { Button, Container, FilledInput, FormControl, InputAdornment, InputLabel, OutlinedInput, TextField } from '@mui/material';
+import {  Autocomplete, Button, Container, Dialog, DialogActions, DialogTitle, FormControl, Grid, InputAdornment, InputBase, InputLabel, OutlinedInput, Select, TextField } from '@mui/material';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined';
 import ArrowDropUpOutlinedIcon from '@mui/icons-material/ArrowDropUpOutlined';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
-// const Search = styled('div')(({ theme }) => ({
-//   position: 'relative',
-//   borderRadius: theme.shape.borderRadius,
-//   backgroundColor: alpha(theme.palette.common.white, 0.15),
-//   '&:hover': {
-//     backgroundColor: alpha(theme.palette.common.white, 0.25),
-//   },
-//   marginRight: theme.spacing(2),
-//   marginLeft: 0,
-//   width: '100%',
-//   [theme.breakpoints.up('sm')]: {
-//     marginLeft: theme.spacing(3),
-//     width: '100%',
-//   },
-// }));
-
-// const SearchIconWrapper = styled('div')(({ theme }) => ({
-//   padding: theme.spacing(0, 2),
-//   height: '100%',
-//   width: '100%',
-//   position: 'absolute',
-//   pointerEvents: 'none',
-//   display: 'flex',
-//   alignItems: 'center',
-//   justifyContent: 'center',
-// }));
-
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+// Top 100 films as rated by IMDb users. http://www.imdb.com/chart/top
+const top100Films = [
+  { title: 'The Shawshank Redemption', year: 1994 },
+  { title: 'The Godfather', year: 1972 },
+  { title: 'The Godfather: Part II', year: 1974 },
+  { title: 'The Dark Knight', year: 2008 },
+  { title: '12 Angry Men', year: 1957 },
+  { title: "Schindler's List", year: 1993 },
+];
 const StyledTabs = styled(Tabs)({
   '& .MuiTabs-indicator': {
     outerHeight: '5px',
@@ -60,17 +41,33 @@ const StyledTabs = styled(Tabs)({
     backgroundColor: 'rgba(0, 0, 0, 0.87)'
   },
 });
+const StyledSearchMenu = styled(Menu)({
+  '& .MuiMenu-paper': {
+   padding: '20px 20px 0',
+   width: '600px'
+  },
+});
+
 
 export default function PrimarySearchAppBar() {
+  const router = useRouter();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
     React.useState<null | HTMLElement>(null);
     const [value, setValue] = React.useState(0);
-
+    const [open, setOpen] = React.useState(false);
+    const handleClickOpen = () => {
+      setOpen(true);
+    };
+  
+    const handleClose = () => {
+      setOpen(false);
+    };
+  
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
-  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -92,10 +89,10 @@ export default function PrimarySearchAppBar() {
 
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
-    <Menu
+    <StyledSearchMenu
       anchorEl={anchorEl}
       anchorOrigin={{
-        vertical: 'top',
+        vertical: 'bottom',
         horizontal: 'right',
       }}
       id={menuId}
@@ -107,9 +104,69 @@ export default function PrimarySearchAppBar() {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
-    </Menu>
+      <FormControl fullWidth size='small' margin={'normal'}>
+        <OutlinedInput color='secondary' size='small' fullWidth placeholder='Exact Phrase'></OutlinedInput>
+      </FormControl>
+      <FormControl fullWidth size='small' margin={'normal'}>
+        <Select
+          value={'description'}
+          // onChange={handleChange}
+        >
+          <MenuItem value={'title'} selected>Title</MenuItem>
+          <MenuItem value={'description'}>Description</MenuItem>
+          <MenuItem value={'content'}>Content</MenuItem>
+        </Select>
+      </FormControl>
+      <Autocomplete
+        multiple
+        size='small'
+        id="tags-outlined"
+        options={top100Films}
+        getOptionLabel={(option) => option.title}
+        defaultValue={[top100Films[5]]}
+        filterSelectedOptions
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            margin="normal"
+            label="filterSelectedOptions"
+            placeholder="Favorites"
+          />
+        )}
+      />
+      <Grid container spacing={5}>
+        <Grid item sm={6}>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DatePicker
+          label="From"
+          value={"11/12/2022"}
+          onChange={(newValue) => {
+            // setValue(newValue);
+          }}
+          renderInput={(params) => <TextField size='small' color='secondary'  margin='normal' {...params} />}
+        />
+    </LocalizationProvider>
+        </Grid>
+        <Grid item sm={6}>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DatePicker
+          label="From"
+          value={"11/12/2022"}
+          onChange={(newValue) => {
+            // setValue(newValue);
+          }}
+          renderInput={(params) => <TextField size='small' color='secondary'  margin='normal' {...params} />}
+        />
+    </LocalizationProvider>
+        </Grid>
+      </Grid>
+      <DialogActions>
+          <Button onClick={handleClose} color='secondary'>Clear</Button>
+          <Button onClick={handleClose} autoFocus color='secondary' variant='contained'>
+            Search
+          </Button>
+        </DialogActions>
+    </StyledSearchMenu>
   );
 
   const mobileMenuId = 'primary-search-account-menu-mobile';
@@ -149,18 +206,6 @@ export default function PrimarySearchAppBar() {
         </IconButton>
         <p>Notifications</p>
       </MenuItem>
-      <MenuItem onClick={handleProfileMenuOpen}>
-        <IconButton
-          size="large"
-          aria-label="account of current user"
-          aria-controls="primary-search-account-menu"
-          aria-haspopup="true"
-          color="inherit"
-        >
-          <AccountCircle />
-        </IconButton>
-        <p>Profile</p>
-      </MenuItem>
     </Menu>
   );
 
@@ -174,12 +219,9 @@ export default function PrimarySearchAppBar() {
             <path d="M29.0625 19.5122H32.6953M29.0625 26.7778H32.6953M14.5313 34.0435H32.6953M14.5313 41.3091H32.6953M39.9609 19.5122H48.1348C49.6388 19.5122 50.8594 20.7328 50.8594 22.2368V44.9419C50.8594 46.3871 50.2853 47.7732 49.2633 48.7951C48.2414 49.817 46.8554 50.3911 45.4102 50.3911M39.9609 19.5122V44.9419C39.9609 46.3871 40.5351 47.7732 41.557 48.7951C42.5789 49.817 43.9649 50.3911 45.4102 50.3911M39.9609 19.5122V13.1548C39.9609 11.6508 38.7403 10.4302 37.2363 10.4302H9.99023C8.48625 10.4302 7.26562 11.6508 7.26562 13.1548V44.9419C7.26562 46.3871 7.83974 47.7732 8.86166 48.7951C9.88359 49.817 11.2696 50.3911 12.7148 50.3911H45.4102M14.5313 19.5122H21.7969V26.7778H14.5313V19.5122Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           {/* Search Field Begins */}
-          <FormControl sx={{ ml: 4 }} fullWidth variant="outlined" color='secondary'>
+          <FormControl sx={{ ml: 4 }} fullWidth variant="outlined" color='secondary' style={{position: 'relative'}}>
           <OutlinedInput
             id="filled-adornment-password"
-            // type={values.showPassword ? 'text' : 'password'}
-            // value={values.password}
-            // onChange={handleChange('password')}
             size='small'
             placeholder='Search for topics, countries, &amp; sources'
             startAdornment={
@@ -198,45 +240,38 @@ export default function PrimarySearchAppBar() {
               <InputAdornment position="end">
                 <IconButton
                   aria-label="Search Dropdown"
-                  // onClick={handleClickShowPassword}
-                  // onMouseDown={handleMouseDownPassword}
+                  onClick={handleMenuOpen}
                   edge="end"
                 >
-                  {NaN !== NaN ? <ArrowDropDownOutlinedIcon /> : <ArrowDropUpOutlinedIcon />}
+                  {!open ? <ArrowDropDownOutlinedIcon /> : <ArrowDropUpOutlinedIcon />}
                 </IconButton>
               </InputAdornment>
             }
           />
+          {renderMenu}
         </FormControl>
-         
         </Toolbar>
           <StyledTabs
           value={value}
           onChange={handleChange}
-          variant="scrollable"
-          scrollButtons="auto"
+          // variant="scrollable"
+          // scrollButtons="auto"
           textColor='secondary'
           aria-label="Categories"
+          centered
         >
-          <Tab disableRipple label="Home" />
-          <Tab disableRipple label="Item Two" />
-          <Tab disableRipple label="Item One" />
-          <Tab disableRipple label="Item Two" />
-          <Tab disableRipple label="Item One" />
-          <Tab disableRipple label="Item Two" />
-          <Tab disableRipple label="Item One" />
-          <Tab disableRipple label="Item Two" />
-          <Tab disableRipple label="Item One" />
-          <Tab disableRipple label="Item Two" />
-          <Tab disableRipple label="Item Two" />
-          <Tab disableRipple label="Item Two" />
-
-
+          <Tab disableRipple label="Home" onClick={()=>{router.push('/')}} />
+          <Tab disableRipple label="Business" onClick={()=>{router.push('/business')}}/>
+          <Tab disableRipple label="Entertainment"onClick={()=>{router.push('/entertainment')}} />
+          <Tab disableRipple label="General" onClick={()=>{router.push('/general')}} />
+          <Tab disableRipple label="Health" onClick={()=>{router.push('/health')}} />
+          <Tab disableRipple label="Science" onClick={()=>{router.push('/science')}} />
+          <Tab disableRipple label="Sports" onClick={()=>{router.push('/sports')}}/>
+          <Tab disableRipple label="Technology" onClick={()=>{router.push('/technology')}} />
         </StyledTabs>
         </Container>
       </AppBar>
-      {renderMobileMenu}
-      {renderMenu}
+      {renderMobileMenu}    
     </Box>
   );
 }

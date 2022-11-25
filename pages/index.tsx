@@ -15,8 +15,11 @@ import { Suspense } from 'react'
 const DynamicNewsListCard = dynamic(() => import('../components/SectionNewsListCard'), {
   suspense: true,
 })
+const DynamicNewsCard = dynamic(() => import('../components/News'), {
+  suspense: true,
+})
 // const newsapi = new NewsApi(process.env.NEWS_API_KEY)
-const Home: NextPage = (props:any) => {
+const Home: NextPage = () => {
   return (
     <>
        <Container >
@@ -30,7 +33,60 @@ const Home: NextPage = (props:any) => {
               <CircularProgress />
             </Box>
             }>
-            <DynamicNewsListCard></DynamicNewsListCard>     
+            <DynamicNewsListCard heading='Business'>
+            <Suspense fallback={ 
+              <Box sx={{ display: 'flex' }}>
+                <CircularProgress />
+              </Box>
+              }>
+              <DynamicNewsCard  title="Amazon's smart thermostat is back down to $42 for Black Friday" img='hello' publishedAt="12/12/2022" author='Pradeep nayak'></DynamicNewsCard>    
+          </Suspense>
+          <Suspense fallback={ 
+              <Box sx={{ display: 'flex' }}>
+                <CircularProgress />
+              </Box>
+              }>
+              <DynamicNewsCard  title="Amazon's smart thermostat is back down to $42 for Black Friday" img='hello' publishedAt="12/12/2022" author='Pradeep nayak'></DynamicNewsCard>    
+          </Suspense>
+          <Suspense fallback={ 
+              <Box sx={{ display: 'flex' }}>
+                <CircularProgress />
+              </Box>
+              }>
+              <DynamicNewsCard  title="Amazon's smart thermostat is back down to $42 for Black Friday" img='hello' publishedAt="12/12/2022" author='Pradeep nayak'></DynamicNewsCard>    
+          </Suspense>
+            </DynamicNewsListCard>     
+          </Suspense>
+        </Grid>
+        <Grid item md={4}>
+          <Suspense fallback={ 
+            <Box sx={{ display: 'flex' }}>
+              <CircularProgress />
+            </Box>
+            }>
+            <DynamicNewsListCard heading='Technology'>
+            <Suspense fallback={ 
+              <Box sx={{ display: 'flex' }}>
+                <CircularProgress />
+              </Box>
+              }>
+              <DynamicNewsCard  title="Amazon's smart thermostat is back down to $42 for Black Friday" img='hello' publishedAt="12/12/2022" author='Pradeep nayak'></DynamicNewsCard>    
+          </Suspense>
+          <Suspense fallback={ 
+            <Box sx={{ display: 'flex' }}>
+              <CircularProgress />
+            </Box>
+            }>
+           <DynamicNewsCard  title="Amazon's smart thermostat is back down to $42 for Black Friday" img='hello' publishedAt="12/12/2022" author='Pradeep nayak'></DynamicNewsCard>    
+          </Suspense>
+            <Suspense fallback={ 
+              <Box sx={{ display: 'flex' }}>
+                <CircularProgress />
+              </Box>
+              }>
+            <DynamicNewsCard  title="Amazon's smart thermostat is back down to $42 for Black Friday" img='hello' publishedAt="12/12/2022" author='Pradeep nayak'></DynamicNewsCard>    
+            </Suspense>
+            </DynamicNewsListCard>     
           </Suspense>
             </Grid>
             <Grid item md={4}>
@@ -39,16 +95,7 @@ const Home: NextPage = (props:any) => {
               <CircularProgress />
             </Box>
             }>
-            <DynamicNewsListCard></DynamicNewsListCard>     
-          </Suspense>
-            </Grid>
-            <Grid item md={4}>
-            <Suspense fallback={ 
-            <Box sx={{ display: 'flex' }}>
-              <CircularProgress />
-            </Box>
-            }>
-            <DynamicNewsListCard></DynamicNewsListCard>     
+            <DynamicNewsListCard heading='Entertainment'></DynamicNewsListCard>     
           </Suspense>
             </Grid>
         </Grid>

@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 import { Box, CssBaseline, Paper, ThemeProvider, CircularProgress } from '@mui/material'
 import theme from '../src/theme'
+import Footer from '../components/Footer'
 
 // Dynamically Importing Components
 const DynamicHeader = dynamic(() => import('../components/Header'), {
@@ -28,9 +29,10 @@ function MyApp({ Component, pageProps }: AppProps) {
       }>
       <DynamicHeader />
     </Suspense>
-    <Paper sx={{backgroundColor: '#f1f5f9', minHeight: '90vh'}}>
+    <Paper elevation={0} sx={{backgroundColor: '#f1f5f9', minHeight: '83vh'}}>
       <Component {...pageProps} />
     </Paper>
+    <Footer/>
   </ThemeProvider>
    </>
   )
