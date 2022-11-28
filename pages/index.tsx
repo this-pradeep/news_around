@@ -18,7 +18,7 @@ const DynamicNewsListCard = dynamic(() => import('../components/SectionNewsListC
 const DynamicNewsCard = dynamic(() => import('../components/News'), {
   suspense: true,
 })
-// const newsapi = new NewsApi(process.env.NEWS_API_KEY)
+// const newsapi = new NewsApi(process.env.newsAPIKey)
 const Home: NextPage = () => {
   return (
     <>

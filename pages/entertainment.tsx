@@ -23,13 +23,13 @@ interface Response {
   articles: Article[];
 }
 
-const business: NextPage = ({ articles }: InferGetStaticPropsType<typeof getStaticProps>) => {
+const entertainment: NextPage = ({ articles }: InferGetStaticPropsType<typeof getStaticProps>) => {
   
   return (
     <>
       <Container>
       <Typography sx={{padding: "25px 0"}} variant="h4" component="h2" fontWeight={500}>
-          Business  
+          Entertainment  
         </Typography>
         <Grid container spacing={4}>
           {
@@ -56,7 +56,7 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
   const newsapi = new NewsApi(process.env.newsAPIKey)
    // All options passed to topHeadlines are optional, but you need to include at least one of them
    const data = await newsapi.v2.topHeadlines({
-    category: 'business',
+    category: 'entertainment',
     language: 'en',
   })
   // .then((response:Response) => {
@@ -77,4 +77,4 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
 }
 
 
-export default business
+export default entertainment

@@ -23,19 +23,19 @@ interface Response {
   articles: Article[];
 }
 
-const business: NextPage = ({ articles }: InferGetStaticPropsType<typeof getStaticProps>) => {
+const science: NextPage = ({ articles }: InferGetStaticPropsType<typeof getStaticProps>) => {
   
   return (
     <>
       <Container>
       <Typography sx={{padding: "25px 0"}} variant="h4" component="h2" fontWeight={500}>
-          Business  
+          Science  
         </Typography>
         <Grid container spacing={4}>
           {
             articles && articles.map((post:Article)=>(
               <Grid item sm={4} key={`post-${post.title}`}>
-                <NewsCard children={<News  title={post.title} img={post.urlToImage} publishedAt={post.publishedAt} author={post.author || "Annonymous"} />} />
+                <NewsCard children={<News  title={post.title} img={post.urlToImage} publishedAt={post.publishedAt} author={post.author?.split(' ')[0] || "Annonymous"} />} />
               </Grid>
               )
             )
@@ -56,7 +56,7 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
   const newsapi = new NewsApi(process.env.newsAPIKey)
    // All options passed to topHeadlines are optional, but you need to include at least one of them
    const data = await newsapi.v2.topHeadlines({
-    category: 'business',
+    category: 'science',
     language: 'en',
   })
   // .then((response:Response) => {
@@ -77,4 +77,4 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
 }
 
 
-export default business
+export default science
