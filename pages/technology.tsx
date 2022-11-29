@@ -35,7 +35,9 @@ const technology: NextPage = ({ articles }: InferGetStaticPropsType<typeof getSt
           {
             articles && articles.map((post:Article)=>(
               <Grid item sm={4} key={`post-${post.title}`}>
-                <NewsCard children={<News  title={post.title} img={post.urlToImage} publishedAt={post.publishedAt} author={post.author?.split(' ')[0] || "Annonymous"} />} />
+                <NewsCard>
+                  <News  title={post.title} img={post.urlToImage} publishedAt={post.publishedAt} author={post.author?.split(' ')[0] || "Annonymous"} />
+                </NewsCard>  
               </Grid>
               )
             )
@@ -58,6 +60,7 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
    const data = await newsapi.v2.topHeadlines({
     category: 'technology',
     language: 'en',
+    pageSize: 10
   })
   // .then((response:Response) => {
   //   console.log(response.articles.length);

@@ -254,11 +254,12 @@ export default function PrimarySearchAppBar() {
           <StyledTabs
           value={value}
           onChange={handleChange}
-          // variant="scrollable"
-          // scrollButtons="auto"
+          variant="scrollable"
+          scrollButtons="auto"
           textColor='secondary'
+          allowScrollButtonsMobile
           aria-label="Categories"
-          centered
+          // centered
         >
           <Tab disableRipple label="Home" onClick={()=>{router.push('/')}} />
           <Tab disableRipple label="Business" onClick={()=>{router.push('/business')}}/>

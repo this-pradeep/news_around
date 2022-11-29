@@ -1,11 +1,13 @@
 import { Container, Grid, Typography } from '@mui/material'
 import { NextPage, GetStaticProps, InferGetStaticPropsType } from 'next'
-import React from 'react'
+import React, { Suspense, useState } from 'react'
 import News from '../components/News'
-import NewsCard from '../components/NewsCard'
+// import NewsCard from '../components/NewsCard'
 import InfiniteScroll from 'react-infinite-scroll-component';
 import NewsApi from 'newsapi'
+import dynamic from 'next/dynamic'
 
+const DynamicNewsCard = dynamic(() => import('../components/NewsCard'))
 interface Article {
   source:object;
   author: string;
@@ -24,7 +26,7 @@ interface Response {
 }
 
 const business: NextPage = ({ articles }: InferGetStaticPropsType<typeof getStaticProps>) => {
-  
+  const [articlesFetched, setArticlesFetched] = useState<Article[]>();
   return (
     <>
       <Container>
@@ -34,9 +36,27 @@ const business: NextPage = ({ articles }: InferGetStaticPropsType<typeof getStat
         <Grid container spacing={4}>
           {
             articles && articles.map((post:Article)=>(
-              <Grid item sm={4} key={`post-${post.title}`}>
-                <NewsCard children={<News  title={post.title} img={post.urlToImage} publishedAt={post.publishedAt} author={post.author || "Annonymous"} />} />
+              <InfiniteScroll
+                dataLength={items.length} //This is important field to render the next data
+                next={fetchData}
+                hasMore={true}
+                loader={<h4>Loading...</h4>}
+                endMessage={
+                  <p style={{ textAlign: 'center' }}>
+                    <b>Yay! You have seen it all</b>
+                  </p>
+                }
+              
+              >
+               <Grid item sm={4} key={`post-${post.title}`}>
+                <Suspense fallback={<>Loading</>}>
+                <DynamicNewsCard>
+                  <News  title={post.title} img={post.urlToImage} publishedAt={post.publishedAt} author={post.author?.split(' ')[0] || "Annonymous"} />
+                </DynamicNewsCard>
+                </Suspense>
               </Grid>
+              </InfiniteScroll>
+              
               )
             )
           }
@@ -58,17 +78,8 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
    const data = await newsapi.v2.topHeadlines({
     category: 'business',
     language: 'en',
+    pageSize: 10
   })
-  // .then((response:Response) => {
-  //   console.log(response.articles.length);
-  //   /*
-  //     {
-  //       status: "ok",
-  //       articles: [...]
-  //     }
-  //   */
-  // });
-
   return {
     props: {
       articles : data.articles

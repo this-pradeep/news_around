@@ -6,6 +6,7 @@ import { Suspense } from 'react'
 import { Box, CssBaseline, Paper, ThemeProvider, CircularProgress } from '@mui/material'
 import theme from '../src/theme'
 import Footer from '../components/Footer'
+import Loading from '../components/Loading'
 
 // Dynamically Importing Components
 const DynamicHeader = dynamic(() => import('../components/Header'), {
@@ -21,6 +22,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   </Head>
   <ThemeProvider theme={theme}>
     {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+    <Loading/>
     <CssBaseline />
     <Suspense fallback={ 
       <Box sx={{ display: 'flex' }}>
