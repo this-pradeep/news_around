@@ -1,5 +1,6 @@
-import * as React from 'react';
+import  React, {useCallback, useEffect, useRef, useState} from 'react';
 import { styled, alpha } from '@mui/material/styles';
+import { debounce } from "lodash";
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -9,18 +10,20 @@ import IconButton from '@mui/material/IconButton';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-
+import { Article } from '../interfaces/Article'
 import Badge from '@mui/material/Badge';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import MailIcon from '@mui/icons-material/Mail';
+import CallMadeIcon from '@mui/icons-material/CallMade';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import {  Autocomplete, Button, Container, Dialog, DialogActions, DialogTitle, FormControl, Grid, InputAdornment, InputBase, InputLabel, OutlinedInput, Select, TextField } from '@mui/material';
+import {  Autocomplete, Button, Container, Dialog, DialogActions, DialogTitle, FormControl, Grid, InputAdornment, InputBase, InputLabel, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ListSubheader, OutlinedInput, Select, TextField } from '@mui/material';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined';
 import ArrowDropUpOutlinedIcon from '@mui/icons-material/ArrowDropUpOutlined';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import SearchObject from '../interfaces/SearchObject';
 // Top 100 films as rated by IMDb users. http://www.imdb.com/chart/top
 const top100Films = [
   { title: 'The Shawshank Redemption', year: 1994 },
@@ -51,11 +54,32 @@ const StyledSearchMenu = styled(Menu)({
 
 export default function PrimarySearchAppBar() {
   const router = useRouter();
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
-    React.useState<null | HTMLElement>(null);
-    const [value, setValue] = React.useState(0);
-    const [open, setOpen] = React.useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [anchorElSearch, setAnchorElSearch] = useState<null | HTMLElement>(null);
+  const [suggestions, setSuggestions] = useState<Article[]>();
+  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState<null | HTMLElement>(null);
+  const [value, setValue] = useState<number>(0);
+  const [open, setOpen] = useState<boolean>(false);
+  const [advanceSearch, setAdvanceSearch] = useState<SearchObject | null>(null);
+  const formRef = useRef(null)
+
+useEffect(() => {
+ console.log(suggestions)
+//  return()=>{console.log(suggestions)}
+}, [suggestions, advanceSearch])
+
+// Handling form submission;
+const handleFormSubmit = (e:React.FormEvent<HTMLElement>) => {
+  e.preventDefault()
+  
+  console.log("Form submitted Successfully", advanceSearch?.exactPhrase, advanceSearch?.fromDate, advanceSearch?.searchIn, advanceSearch?.sortBy, advanceSearch?.toDate)
+}
+// Reseting Form Data
+const resetFormData = () => {
+  // @ts-ignore
+  formRef.current?.reset()
+ setAdvanceSearch(null)
+}
     const handleClickOpen = () => {
       setOpen(true);
     };
@@ -63,8 +87,10 @@ export default function PrimarySearchAppBar() {
     const handleClose = () => {
       setOpen(false);
     };
+
   
   const isMenuOpen = Boolean(anchorEl);
+  const isSearchSuggestionOpen = Boolean(anchorElSearch);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -79,7 +105,6 @@ export default function PrimarySearchAppBar() {
     setAnchorEl(null);
     handleMobileMenuClose();
   };
-
   const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMobileMoreAnchorEl(event.currentTarget);
   };
@@ -87,7 +112,51 @@ export default function PrimarySearchAppBar() {
     setValue(newValue);
   };
 
+  
+  const handleSearchInputChange = debounce((value:string):void => {
+    fetch(`https://newsapi.org/v2/everything?q=${value}&searchIn=title&apiKey=42812dc9f8ac48a98aa4740520261e4d&pageSize=5`)
+      .then((res) => res.json())
+      .then((json) => {
+        setSuggestions(json.articles)
+      });
+  }, 500);
+
+// console.log(suggestions)
+
   const menuId = 'primary-search-account-menu';
+  const menuId2 = 'search-articles-dropdown-list';
+  const renderSearchSuggestions = (
+    <List
+    sx={{
+      width: '100%',
+      maxWidth: 900,
+      bgcolor: 'background.paper',
+      position: 'absolute',
+      top:50,
+      overflow: 'auto',
+      maxHeight: 300,
+      '& ul': { padding: 0 },
+    }}
+    subheader={<li />}
+  >
+    {
+      <li >
+        <ul>
+          <ListSubheader>{`your search results are: `}</ListSubheader>
+          { suggestions &&  suggestions?.length != 0 && suggestions.map((item, i) => (
+            <ListItem key={`item-${item.title}${i}`} onClick={() => {
+                setSuggestions([])
+              router.push(`/item-${item.title}`,'',{ shallow: true })
+              }}>
+              <ListItemText primary={`${item.title}`} />
+            </ListItem>
+          ))}
+        </ul>
+      </li>
+    }
+  </List>
+  );
+  // Styled Search Menu
   const renderMenu = (
     <StyledSearchMenu
       anchorEl={anchorEl}
@@ -104,45 +173,54 @@ export default function PrimarySearchAppBar() {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
+      {/* Advance Search Form Begins */}
+      <form onSubmit={handleFormSubmit} ref={formRef}  action="submit" method='post'>
       <FormControl fullWidth size='small' margin={'normal'}>
-        <OutlinedInput color='secondary' size='small' fullWidth placeholder='Exact Phrase'></OutlinedInput>
+        <OutlinedInput 
+        color='secondary' 
+        size='small' 
+        fullWidth 
+        error={advanceSearch?.exactPhrase == ''}
+        placeholder='Exact Phrase'
+        onChange={debounce((e) => {
+          // @ts-ignore
+          setAdvanceSearch((previousState:SearchObject) => {
+            return { ...previousState, exactPhrase: e.target.value }
+          })
+        },500)}
+        ></OutlinedInput>
       </FormControl>
-      <FormControl fullWidth size='small' margin={'normal'}>
+      <FormControl fullWidth size='small' color='secondary' margin={'normal'}>
         <Select
-          value={'description'}
-          // onChange={handleChange}
+          value={advanceSearch?.searchIn || 'Search In'}
+          onChange={(e) => {
+            // @ts-ignore
+            setAdvanceSearch((previousState:SearchObject) => {
+              return { ...previousState, searchIn: e.target.value }
+            })
+          }}
         >
-          <MenuItem value={'title'} selected>Title</MenuItem>
+          <MenuItem value={'Search In'} disabled>Search In</MenuItem>
+          <MenuItem value={'title'} >Title</MenuItem>
           <MenuItem value={'description'}>Description</MenuItem>
           <MenuItem value={'content'}>Content</MenuItem>
         </Select>
       </FormControl>
-      <Autocomplete
-        multiple
-        size='small'
-        id="tags-outlined"
-        options={top100Films}
-        getOptionLabel={(option) => option.title}
-        defaultValue={[top100Films[5]]}
-        filterSelectedOptions
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            margin="normal"
-            label="filterSelectedOptions"
-            placeholder="Favorites"
-          />
-        )}
-      />
       <Grid container spacing={5}>
         <Grid item sm={6}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DatePicker
+          inputFormat="DD-MM-YYYY"
           label="From"
-          value={"11/12/2022"}
-          onChange={(newValue) => {
-            // setValue(newValue);
-          }}
+          value={advanceSearch?.fromDate}
+          onChange={debounce((newValue) => {
+            // @ts-ignore
+           const date =  newValue?.$d.getFullYear() + "-" + (newValue?.$d.getMonth() + 1) + "-" + newValue?.$d.getDate();
+            // @ts-ignore
+            setAdvanceSearch((previousState:SearchObject) => {
+              return { ...previousState, fromDate: date }
+            })
+          },500)}
           renderInput={(params) => <TextField size='small' color='secondary'  margin='normal' {...params} />}
         />
     </LocalizationProvider>
@@ -150,22 +228,29 @@ export default function PrimarySearchAppBar() {
         <Grid item sm={6}>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DatePicker
-          label="From"
-          value={"11/12/2022"}
-          onChange={(newValue) => {
-            // setValue(newValue);
-          }}
+          inputFormat="DD-MM-YYYY"
+          label="To"
+          value={advanceSearch?.toDate}
+          onChange={debounce((newValue) => {
+            // @ts-ignore
+           const date =  newValue?.$d.getFullYear() + "-" + (newValue?.$d.getMonth() + 1) + "-" + newValue?.$d.getDate();
+            // @ts-ignore
+            setAdvanceSearch((previousState:SearchObject) => {
+              return { ...previousState, toDate: date }
+            })
+          },500)}
           renderInput={(params) => <TextField size='small' color='secondary'  margin='normal' {...params} />}
         />
     </LocalizationProvider>
         </Grid>
       </Grid>
       <DialogActions>
-          <Button onClick={handleClose} color='secondary'>Clear</Button>
-          <Button onClick={handleClose} autoFocus color='secondary' variant='contained'>
+          <Button onClick={resetFormData} color='secondary'>Clear</Button>
+          <Button type="submit" autoFocus color='secondary' variant='contained'>
             Search
           </Button>
         </DialogActions>
+      </form>
     </StyledSearchMenu>
   );
 
@@ -224,12 +309,19 @@ export default function PrimarySearchAppBar() {
             id="filled-adornment-password"
             size='small'
             placeholder='Search for topics, countries, &amp; sources'
+            onChange={(e) => {
+              if(e.target.value!== '') {
+                console.log("If",e.target.value)
+                handleSearchInputChange(e.target.value)
+              } else{
+                console.log("Else", e.target.value)
+                setSuggestions([])
+              }
+              }}
             startAdornment={
               <InputAdornment position="end">
                 <IconButton
                   aria-label="Search Dropdown"
-                  // onClick={handleClickShowPassword}
-                  // onMouseDown={handleMouseDownPassword}
                   edge="start"
                 >
                    <SearchOutlinedIcon /> 
@@ -248,8 +340,18 @@ export default function PrimarySearchAppBar() {
               </InputAdornment>
             }
           />
+          { suggestions && suggestions?.length != 0 && renderSearchSuggestions }
           {renderMenu}
         </FormControl>
+        {suggestions && (
+        <div className="autocomplete">
+          {suggestions.map((el:any, i) => (
+            <div key={i} className="autocompleteItems">
+              <span>{el.name}</span>
+            </div>
+          ))}
+        </div>
+      )}
         </Toolbar>
           <StyledTabs
           value={value}
@@ -261,14 +363,14 @@ export default function PrimarySearchAppBar() {
           aria-label="Categories"
           // centered
         >
-          <Tab disableRipple label="Home" onClick={()=>{router.push('/')}} />
-          <Tab disableRipple label="Business" onClick={()=>{router.push('/business')}}/>
-          <Tab disableRipple label="Entertainment"onClick={()=>{router.push('/entertainment')}} />
-          <Tab disableRipple label="General" onClick={()=>{router.push('/general')}} />
-          <Tab disableRipple label="Health" onClick={()=>{router.push('/health')}} />
-          <Tab disableRipple label="Science" onClick={()=>{router.push('/science')}} />
-          <Tab disableRipple label="Sports" onClick={()=>{router.push('/sports')}}/>
-          <Tab disableRipple label="Technology" onClick={()=>{router.push('/technology')}} />
+          <Tab disableRipple label="Home" onClick={()=>{router.push('/','',{ shallow: true })}} />
+          <Tab disableRipple label="Business" onClick={()=>{router.push('/business','',{ shallow: true })}}/>
+          <Tab disableRipple label="Entertainment"onClick={()=>{router.push('/entertainment','',{ shallow: true })}} />
+          <Tab disableRipple label="General" onClick={()=>{router.push('/general','',{ shallow: true })}} />
+          <Tab disableRipple label="Health" onClick={()=>{router.push('/health','',{ shallow: true })}} />
+          <Tab disableRipple label="Science" onClick={()=>{router.push('/science','',{ shallow: true })}} />
+          <Tab disableRipple label="Sports" onClick={()=>{router.push('/sports','',{ shallow: true })}}/>
+          <Tab disableRipple label="Technology" onClick={()=>{router.push('/technology','',{ shallow: true })}} />
         </StyledTabs>
         </Container>
       </AppBar>

@@ -5,23 +5,7 @@ import News from '../components/News'
 import NewsCard from '../components/NewsCard'
 import InfiniteScroll from 'react-infinite-scroll-component';
 import NewsApi from 'newsapi'
-
-interface Article {
-  source:object;
-  author: string;
-  title: string;
-  description: string;
-  url: string;
-  urlToImage: string;
-  publishedAt: string;
-  content: string;
-}
-
-interface Response {
-  status: string;
-  totalResults:number;
-  articles: Article[];
-}
+import { Article } from '../interfaces/Article'
 
 const health: NextPage = ({ articles }: InferGetStaticPropsType<typeof getStaticProps>) => {
   

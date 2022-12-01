@@ -20,7 +20,7 @@ const News = ({title, img, publishedAt, author}: NewsProps):JSX.Element => {
         </Grid>
         <Grid item xs={4}>
           <Box  maxHeight={100} maxWidth={100} overflow="hidden" borderRadius={2} >
-            <img src={img} style={{
+            <img src={img} loading="lazy" style={{
               objectFit: 'cover',
               objectPosition: 'center',
             }} height={100}  width={100} alt={'post'} />   

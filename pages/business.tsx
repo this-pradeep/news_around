@@ -1,32 +1,17 @@
 import { Container, Grid, Typography } from '@mui/material'
 import { NextPage, GetStaticProps, InferGetStaticPropsType } from 'next'
-import React, { Suspense, useState } from 'react'
+import React, { Suspense, useEffect, useState } from 'react'
 import News from '../components/News'
 // import NewsCard from '../components/NewsCard'
 import InfiniteScroll from 'react-infinite-scroll-component';
 import NewsApi from 'newsapi'
 import dynamic from 'next/dynamic'
-
+import InfiniteScrollNews from '../components/InfiniteScrollNews';
+import { Article } from '../interfaces/Article'
 const DynamicNewsCard = dynamic(() => import('../components/NewsCard'))
-interface Article {
-  source:object;
-  author: string;
-  title: string;
-  description: string;
-  url: string;
-  urlToImage: string;
-  publishedAt: string;
-  content: string;
-}
 
-interface Response {
-  status: string;
-  totalResults:number;
-  articles: Article[];
-}
 
 const business: NextPage = ({ articles }: InferGetStaticPropsType<typeof getStaticProps>) => {
-  const [articlesFetched, setArticlesFetched] = useState<Article[]>();
   return (
     <>
       <Container>
@@ -36,30 +21,18 @@ const business: NextPage = ({ articles }: InferGetStaticPropsType<typeof getStat
         <Grid container spacing={4}>
           {
             articles && articles.map((post:Article)=>(
-              <InfiniteScroll
-                dataLength={items.length} //This is important field to render the next data
-                next={fetchData}
-                hasMore={true}
-                loader={<h4>Loading...</h4>}
-                endMessage={
-                  <p style={{ textAlign: 'center' }}>
-                    <b>Yay! You have seen it all</b>
-                  </p>
-                }
-              
-              >
-               <Grid item sm={4} key={`post-${post.title}`}>
+              <Grid item sm={4} key={`post-${post.title}`}>
                 <Suspense fallback={<>Loading</>}>
                 <DynamicNewsCard>
                   <News  title={post.title} img={post.urlToImage} publishedAt={post.publishedAt} author={post.author?.split(' ')[0] || "Annonymous"} />
                 </DynamicNewsCard>
                 </Suspense>
               </Grid>
-              </InfiniteScroll>
-              
-              )
-            )
+              ))
           }
+          <Grid item sm={4}>
+            <InfiniteScrollNews />
+          </Grid>
         </Grid>
       </Container>
     </>
@@ -78,7 +51,7 @@ export const getStaticProps: GetStaticProps = async (ctx) => {
    const data = await newsapi.v2.topHeadlines({
     category: 'business',
     language: 'en',
-    pageSize: 10
+    pageSize: 20
   })
   return {
     props: {
