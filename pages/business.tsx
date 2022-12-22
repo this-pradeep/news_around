@@ -2,13 +2,10 @@ import { Container, Grid, Typography } from '@mui/material'
 import { NextPage, GetStaticProps, InferGetStaticPropsType } from 'next'
 import React, { Suspense, useEffect, useState } from 'react'
 import News from '../components/News'
-// import NewsCard from '../components/NewsCard'
-import InfiniteScroll from 'react-infinite-scroll-component';
 import NewsApi from 'newsapi'
 import dynamic from 'next/dynamic'
-import InfiniteScrollNews from '../components/InfiniteScrollNews';
 import { Article } from '../interfaces/Article'
-const DynamicNewsCard = dynamic(() => import('../components/NewsCard'))
+const NewsCard = dynamic(() => import('../components/NewsCard'))
 
 
 const business: NextPage = ({ articles }: InferGetStaticPropsType<typeof getStaticProps>) => {
@@ -19,20 +16,17 @@ const business: NextPage = ({ articles }: InferGetStaticPropsType<typeof getStat
           Business  
         </Typography>
         <Grid container spacing={4}>
-          {
-            articles && articles.map((post:Article)=>(
-              <Grid item sm={4} key={`post-${post.title}`}>
+        {
+            articles && articles.map((post:Article, i:number)=>(
+              <Grid item sm={4} key={`post-${i}-${post.title}`}>
                 <Suspense fallback={<>Loading</>}>
-                <DynamicNewsCard>
-                  <News  title={post.title} img={post.urlToImage} publishedAt={post.publishedAt} author={post.author?.split(' ')[0] || "Annonymous"} />
-                </DynamicNewsCard>
+                <NewsCard>
+                  <News  title={post.title} img={post.urlToImage} publishedAt={post.publishedAt} description={post.description || "Annonymous"} />
+                </NewsCard>
                 </Suspense>
               </Grid>
               ))
           }
-          <Grid item sm={4}>
-            <InfiniteScrollNews />
-          </Grid>
         </Grid>
       </Container>
     </>

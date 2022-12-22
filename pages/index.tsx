@@ -1,105 +1,34 @@
-import { Box, Button, Card, CardActionArea, CardContent, CardMedia, CircularProgress, Container, Grid, Typography } from '@mui/material'
-import type { NextPage } from 'next'
-import dynamic from 'next/dynamic'
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
-import { GetStaticProps } from 'next'
+import { Container, Grid, Typography } from '@mui/material'
+import { NextPage, GetStaticProps, InferGetStaticPropsType } from 'next'
+import React, { Suspense, useEffect, useState } from 'react'
+import News from '../components/News'
 import NewsApi from 'newsapi'
-import { Suspense } from 'react'
+import dynamic from 'next/dynamic'
+import { Article } from '../interfaces/Article'
+const NewsCard = dynamic(() => import('../components/NewsCard'))
 
-// Dynamically Importing Components
-// const DynamicSection = dynamic(() => import('../components/Section'), {
-//   suspense: false,
-// })
-const DynamicNewsListCard = dynamic(() => import('../components/SectionNewsListCard'), {
-  suspense: true,
-})
-const DynamicNewsCard = dynamic(() => import('../components/News'), {
-  suspense: true,
-})
-// const newsapi = new NewsApi(process.env.newsAPIKey)
-const Home: NextPage = () => {
+
+const Home: NextPage = ({ articles }: InferGetStaticPropsType<typeof getStaticProps>) => {
   return (
     <>
-       <Container >
-        <Typography sx={{padding: "25px 0"}} variant="h4" component="h2" fontWeight={500}>
-          Your Topics  
+      <Container>
+      <Typography sx={{padding: "25px 0"}} variant="h4" component="h2" fontWeight={500}>
+          All News  
         </Typography>
         <Grid container spacing={4}>
-            <Grid item md={4}>
-            <Suspense fallback={ 
-            <Box sx={{ display: 'flex' }}>
-              <CircularProgress />
-            </Box>
-            }>
-            <DynamicNewsListCard heading='Business'>
-            <Suspense fallback={ 
-              <Box sx={{ display: 'flex' }}>
-                <CircularProgress />
-              </Box>
-              }>
-              <DynamicNewsCard  title="Amazon's smart thermostat is back down to $42 for Black Friday" img='hello' publishedAt="12/12/2022" author='Pradeep nayak'></DynamicNewsCard>    
-          </Suspense>
-          <Suspense fallback={ 
-              <Box sx={{ display: 'flex' }}>
-                <CircularProgress />
-              </Box>
-              }>
-              <DynamicNewsCard  title="Amazon's smart thermostat is back down to $42 for Black Friday" img='hello' publishedAt="12/12/2022" author='Pradeep nayak'></DynamicNewsCard>    
-          </Suspense>
-          <Suspense fallback={ 
-              <Box sx={{ display: 'flex' }}>
-                <CircularProgress />
-              </Box>
-              }>
-              <DynamicNewsCard  title="Amazon's smart thermostat is back down to $42 for Black Friday" img='hello' publishedAt="12/12/2022" author='Pradeep nayak'></DynamicNewsCard>    
-          </Suspense>
-            </DynamicNewsListCard>     
-          </Suspense>
+        {
+            articles && articles.map((post:Article, i:number )=>(
+              <Grid item sm={4} key={`post-${i}-${post.title}`}>
+                <Suspense fallback={<>Loading</>}>
+                <NewsCard>
+                  <News  title={post.title} img={post.urlToImage} publishedAt={post.publishedAt} description={post.description || "Annonymous"} />
+                </NewsCard>
+                </Suspense>
+              </Grid>
+              ))
+          }
         </Grid>
-        <Grid item md={4}>
-          <Suspense fallback={ 
-            <Box sx={{ display: 'flex' }}>
-              <CircularProgress />
-            </Box>
-            }>
-            <DynamicNewsListCard heading='Technology'>
-            <Suspense fallback={ 
-              <Box sx={{ display: 'flex' }}>
-                <CircularProgress />
-              </Box>
-              }>
-              <DynamicNewsCard  title="Amazon's smart thermostat is back down to $42 for Black Friday" img='hello' publishedAt="12/12/2022" author='Pradeep nayak'></DynamicNewsCard>    
-          </Suspense>
-          <Suspense fallback={ 
-            <Box sx={{ display: 'flex' }}>
-              <CircularProgress />
-            </Box>
-            }>
-           <DynamicNewsCard  title="Amazon's smart thermostat is back down to $42 for Black Friday" img='hello' publishedAt="12/12/2022" author='Pradeep nayak'></DynamicNewsCard>    
-          </Suspense>
-            <Suspense fallback={ 
-              <Box sx={{ display: 'flex' }}>
-                <CircularProgress />
-              </Box>
-              }>
-            <DynamicNewsCard  title="Amazon's smart thermostat is back down to $42 for Black Friday" img='hello' publishedAt="12/12/2022" author='Pradeep nayak'></DynamicNewsCard>    
-            </Suspense>
-            </DynamicNewsListCard>     
-          </Suspense>
-            </Grid>
-            <Grid item md={4}>
-            <Suspense fallback={ 
-            <Box sx={{ display: 'flex' }}>
-              <CircularProgress />
-            </Box>
-            }>
-            <DynamicNewsListCard heading='Entertainment'></DynamicNewsListCard>     
-          </Suspense>
-            </Grid>
-        </Grid>
-    </Container>
+      </Container>
     </>
   )
 }
@@ -110,19 +39,20 @@ const Home: NextPage = () => {
 //- The data can be publicly cached (not user-specific).
 //- The page must be pre-rendered (for SEO) and be very fast — getStaticProps generates HTML and JSON files, both of which can be cached by a CDN for performance.
 
-// export const getStaticProps: GetStaticProps = async (ctx) => {
-  
-//   // const res = await newsapi.v2.topHeadlines({
-//   //   from: '2022-11-24',
-//   //   language: 'en',
-//   //   category:'sports',
-//   //   sortBy: 'popularity',
-//   // })
-
-//   return {
-//     props: {}
-//   }
-// }
+export const getStaticProps: GetStaticProps = async (ctx) => {
+  const newsapi = new NewsApi(process.env.newsAPIKey)
+   // All options passed to topHeadlines are optional, but you need to include at least one of them
+   const data = await newsapi.v2.topHeadlines({
+    // category: 'Home',
+    language: 'en',
+    pageSize: 100
+  })
+  return {
+    props: {
+      articles : data.articles
+    }
+  }
+}
 
 
 export default Home
