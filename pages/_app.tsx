@@ -13,7 +13,6 @@ const DynamicHeader = dynamic(() => import('../components/Header'), {
   suspense: true,
 })
 
-
 function MyApp({ Component, pageProps }: AppProps) {
   return (
    <>
